@@ -1,0 +1,162 @@
+<html>
+  <head>
+    <!-- Click on filename with controller in VR works, gets the fileid, could call the function to open file or folder – is just extremely slow :( -->
+    <!-- previous and next page not yet implemented, they alert onclick :) -->
+    <!-- check <a-entity grab> -->
+
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://supereggbert.github.io/aframe-htmlembed-component/dist/build.js"></script>
+
+    <script>
+      AFRAME.registerComponent('logelement', {
+        init: function () {
+          console.log(this.el.sceneEl);  // Reference to the scene element.
+        }
+      });
+      AFRAME.registerComponent('getfoldername', {
+        init: function () {
+          foldername = document.querySelector("#foldername").getAttribute("value");
+          console.log(foldername);
+        }
+      });
+      AFRAME.registerComponent('getfileid', {
+        init: function (clicked_id) {
+          // fileid = this.el;
+          alert(clicked_id);
+          // console.log(fileid);
+        }
+      });
+      // AFRAME.registerComponent('scollmenu', {
+      //   init: function () {
+      //     let scroll = document.getElementById("scroll-range");
+      //     scroll.oninput = function () {
+      //       let panel = document.getElementById("scrolling-container");
+      //       console.log(panel);
+
+      //       let total = panel.scrollHeight - panel.offsetHeight;
+      //       let percentage = total * (Math.abs(100 - this.value) / 100);
+      //       panel.scrollTop = percentage;
+      //       console.log(total);
+      //     }
+      //   }
+      // });
+    </script>
+  </head>
+
+  <body>
+    <style>
+    body {
+      height:100%;
+      overflow-y: hidden;
+    }
+    #scroll-range {
+      top: 20px;
+      right: calc(-100% - 32px);
+      border: none;
+      appearance: none;
+      height: 20px;
+      width: 440px;
+      margin-top: 0px;
+      color: grey;
+      position: absolute;
+      background: #ddd;
+      transform: translate( -50%, 0) rotate(-90deg) translate( -50%, 0);
+      z-index: 10;
+    }
+      #test {
+        background: lightgrey;
+      }
+      #test:hover {
+        background: grey;
+        color: white;
+      }
+      li:hover {
+        background:#bbb;
+      }
+      ul {
+        height: 100%;
+        overflow-y: hidden;
+      }
+      .row {
+        display: flex;
+      }
+      /* .column {
+          flex: 50%;
+      } */
+      .left {
+        flex: 0 0 370px;
+      }
+      .right {
+        flex: 0 0 50px;
+      }
+    </style>
+    <a-scene>
+
+      <a-entity id="cameraRig">
+        <a-camera id="camera"></a-camera>
+        <a-entity id="mouseCursor" cursor="rayOrigin: mouse" raycaster="objects: .screen"></a-entity>
+        <a-entity laser-controls raycaster="objects: .screen;"></a-entity>
+        <!-- <a-entity laser-controls="hand: left"></a-entity> -->
+        <!-- <a-entity laser-controls raycaster="objects: .links; far: 5"></a-entity> -->
+      </a-entity>
+
+      <a-entity class="screen" scrollmenu htmlembed position="0 2 -2">
+      <div style="width:400px; height:500px; background:#eee; position:relative">
+        <div style="width:100%; height:30px; background:#aaa">/Users/katja/Desktop/</div>
+
+        <!-- <div class="row" style="height:440px"> -->
+        <div style="height:420px">
+          <div htmlembed getfileid class="scroll-content" id="scrolling-container" style="height:100%;overflow-y:hidden;list-style-type: none;padding:0;background:#ddd">
+
+            <ul style="position:relative; height:100%; overflow-y:hidden; list-style-type:none; margin-top:0; padding:5px 20px; line-height:30px;">
+              <li id="file1" onclick="alert('file1');"><img src="../file.png" width="20px"/>first.html</li>
+              <li getfileid id="file2" onclick="getfileid(this.id);"><img src="../file.png" width="20px"/>second.html</li>
+              <li id="file3" onclick="alert(this.id);"><img src="../folder.png" width="20px"/>third.html</li>
+              <li><img src="../file.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../file.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../folder.png" width="20px"/>third.html</li>
+              <li><img src="../folder.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../folder.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../folder.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../folder.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <li><img src="../folder.png" width="20px"/>first.html</li>
+              <li><img src="../file.png" width="20px"/>second.html</li>
+              <li><img src="../file.png" width="20px"/>third.html</li>
+              <!-- <button id="test" onclick="alert('hello');">Click</button> -->
+            </ul>
+          </div>
+          <!-- TODO: check <a-entity grab-->
+          <!-- <div scrollmenu htmlembed class="right">
+            <input scrollmenu htmlembed class="scroll-range" type="range" id="scroll-range" value="100" />
+          </div> -->
+          <button id="test" style="position:absolute; left:0;" onclick="alert('previous page');"><</button>
+          <button id="test" style="position:absolute; right:0;" onclick="alert('next page');">></button>
+          <div style="width:100%;height:30px;background:#aaa;position:absolute;bottom:0;text-align:center">27 files</div>
+        </div>
+      </a-entity>
+    </a-scene>
+    <script type="text/javascript">
+      function getfileid(clicked_id)
+      {
+          // alert(clicked_id);
+          let clickedfile = clicked_id;
+          console.log(clickedfile);
+      }
+    </script>
+  </body>
+</html>
