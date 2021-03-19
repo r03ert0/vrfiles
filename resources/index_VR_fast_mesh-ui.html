@@ -1,0 +1,292 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/three-mesh-ui"></script>
+    <script>
+      AFRAME.registerComponent('vr', {
+        init: function () {
+          const scene = document.querySelector('a-scene').object3D
+          scene.background = new THREE.Color( 0x505050 );
+
+          const group = new THREE.Group();
+
+          let objsToTest = [];
+
+          /* container for menu header */
+          const container = new ThreeMeshUI.Block({
+            width: 2,
+            height: 0.2,
+            padding: 0.05,
+            justifyContent: 'center',
+            alignContent: 'left',
+            fontFamily: '../assets/Roboto-msdf.json',
+            fontTexture: '../assets/Roboto-msdf.png',
+            backgroundColor: new THREE.Color(0xcccccc)
+          });
+          container.position.set( 0, 1.4, -1.2 );
+
+          // BUTTONS
+
+          // We start by creating objects containing options that we will use with the two buttons,
+          // in order to write less code.
+
+          const buttonOptions = {
+            width: 0.4,
+            height: 0.15,
+            justifyContent: 'center',
+            alignContent: 'center',
+            offset: 0.05,
+            margin: 0.02,
+            borderRadius: 0.075
+          };
+          // Options for component.setupState().
+          // It must contain a 'state' parameter, which you will refer to with component.setState( 'name-of-the-state' ).
+
+          const hoveredStateAttributes = {
+            state: "hovered",
+            attributes: {
+              offset: 0.035,
+              backgroundColor: new THREE.Color( 0x999999 ),
+              backgroundOpacity: 1,
+              fontColor: new THREE.Color( 0xffffff )
+            },
+          };
+
+          const idleStateAttributes = {
+            state: "idle",
+            attributes: {
+              offset: 0.035,
+              backgroundColor: new THREE.Color( 0x666666 ),
+              backgroundOpacity: 0.3,
+              fontColor: new THREE.Color( 0xffffff )
+            },
+          };
+
+          // Buttons creation, with the options objects passed in parameters.
+
+          const buttonNext = new ThreeMeshUI.Block( buttonOptions );
+          // const buttonPrevious = new ThreeMeshUI.Block( buttonOptions );
+
+          // Add text to buttons
+
+          buttonNext.add(
+            new ThreeMeshUI.Text({ content: "next" })
+          );
+
+          // buttonPrevious.add(
+          //   new ThreeMeshUI.Text({ content: "previous" })
+          // );
+
+          // Create states for the buttons.
+          // In the loop, we will call component.setState( 'state-name' ) when mouse hover or click
+
+          const selectedAttributes = {
+            offset: 0.02,
+            backgroundColor: new THREE.Color( 0x777777 ),
+            fontColor: new THREE.Color( 0x222222 )
+          };
+
+          buttonNext.setupState({
+            state: "selected",
+            attributes: selectedAttributes,
+            onSet: ()=> {
+              currentMesh = (currentMesh + 1) % 3 ;
+              showMesh( currentMesh );
+            }
+          });
+          buttonNext.setupState( hoveredStateAttributes );
+          buttonNext.setupState( idleStateAttributes );
+          buttonNext.position.set( 0.7, -0.02, -1.2 );
+          buttonNext.set({
+            fontColor: new THREE.Color( 0xffffff ),
+            fontSize: 0.1,
+            alignContent: 'center',
+            justifyContent: 'end', // could be 'center' or 'start'
+            padding: 0.03
+          });
+
+          //
+
+          // buttonPrevious.setupState({
+          //   state: "selected",
+          //   attributes: selectedAttributes,
+          //   onSet: ()=> {
+          //     currentMesh -= 1;
+          //     if ( currentMesh < 0 ) currentMesh = 2;
+          //     showMesh( currentMesh );
+          //   }
+          // });
+          // buttonPrevious.setupState( hoveredStateAttributes );
+          // buttonPrevious.setupState( idleStateAttributes );
+
+          //
+
+          // container.add( buttonNext, buttonPrevious );
+          // objsToTest.push( buttonNext, buttonPrevious );
+
+          container.add( buttonNext );
+          objsToTest.push( buttonNext );
+
+
+
+
+
+          /* navigate back to parent folder */
+          const folderUp = new ThreeMeshUI.Text({
+            content: "back",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          folderUp.position.set( 0, 0, -1.2 );
+          folderUp.set({
+            fontColor: new THREE.Color( 0xffffff ),
+            fontSize: 0.1,
+            alignContent: 'left',
+            justifyContent: 'start', // could be 'center' or 'start'
+            padding: 0.03
+          });
+          // textBlock.set({
+          //   alignContent: 'right', // could be 'center' or 'left'
+          //   justifyContent: 'end', // could be 'center' or 'start'
+          //   padding: 0.03
+          // });
+
+          /* display folder name */
+          const folderName = new ThreeMeshUI.Text({
+            content: "mesh collection",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          folderName.position.set( 0.3, 0, -1.2 );
+          folderName.set({
+            fontColor: new THREE.Color( 0xffffff ),
+            fontSize: 0.1,
+            alignContent: 'right',
+            justifyContent: 'end', // could be 'center' or 'start'
+            padding: 0.03
+          });
+
+          /* container for file browser */
+          const fileContainer = new ThreeMeshUI.Block({
+            width: 2,
+            height: 2,
+            padding: 0.05,
+            justifyContent: 'start',
+            alignContent: 'left',
+            fontFamily: '../assets/Roboto-msdf.json',
+            fontTexture: '../assets/Roboto-msdf.png',
+            backgroundColor: new THREE.Color(0xcccccc)
+          });
+          fileContainer.position.set( 0, 0.25, -1.2 );
+
+          /* file list */
+          const files = new ThreeMeshUI.Text({
+            content: "file 1",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          files.set({
+            fontColor: new THREE.Color( 0x000000 ),
+            fontSize: 0.1,
+            alignContent: 'left',
+            justifyContent: 'start', // could be 'center' or 'start'
+            padding: 0.03
+          });
+
+          /* display number of elements in lower bar, navigators to previous and next page */
+          const filebrowserContainer = new ThreeMeshUI.Block({
+            width: 2,
+            height: 0.2,
+            padding: 0.05,
+            justifyContent: 'center',
+            alignContent: 'left',
+            fontFamily: '../assets/Roboto-msdf.json',
+            fontTexture: '../assets/Roboto-msdf.png',
+            backgroundColor: new THREE.Color(0xbbbbbb)
+          });
+          filebrowserContainer.position.set( 0, -0.9, -1.2 );
+
+          /* display previous page file list */
+          const previous = new ThreeMeshUI.Text({
+            content: "previous",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          previous.set({
+            fontColor: new THREE.Color( 0xffffff ),
+            fontSize: 0.1,
+            alignContent: 'left',
+            justifyContent: 'start', // could be 'center' or 'start'
+            padding: 0.03
+          });
+          previous.position.set( 0, 0, -1.2);
+
+          /* display next chunk of files in list */
+          const next = new ThreeMeshUI.Text({
+            content: "next",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          next.set({
+            fontColor: new THREE.Color( 0xffffff ),
+            fontSize: 0.1,
+            alignContent: 'right',
+            justifyContent: 'end', // could be 'center' or 'start'
+            padding: 0.03
+          });
+          next.position.set( 1.25, 0, -1.2);
+
+          /* display number of elements in current directory */
+          const filecount = new ThreeMeshUI.Text({
+            content: "12",
+            fontSize: 0.25,
+            color: new THREE.Color(0x00ff00)
+          });
+          filecount.set({
+            fontColor: new THREE.Color( 0xeeeeee ),
+            fontSize: 0.1,
+            alignContent: 'left',
+            justifyContent: 'center', // could be 'center' or 'start'
+            padding: 0.03
+          });
+          filecount.position.set( 0.6, 0, -1.2);
+
+          container.add( folderUp );
+          container.add( folderName );
+          group.add(container);
+          fileContainer.add(files);
+
+          fileContainer.add(
+            new ThreeMeshUI.Text({
+            content: '\n Added file',
+            fontSize: 0.1,
+            fontColor: new THREE.Color( 0xff0000 )
+            })
+          );
+
+          group.add(fileContainer);
+
+          filebrowserContainer.add(previous);
+          filebrowserContainer.add(filecount);
+          filebrowserContainer.add(next);
+          group.add(filebrowserContainer);
+
+
+
+          this.el.setObject3D('group', group);
+        },
+        tick: function () {
+          ThreeMeshUI.update();
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <a-scene configure>
+      <a-entity vr position="0 2 -3"></a-entity>
+    </a-scene>
+  </body>
+</html>
+
+
