@@ -1,7 +1,7 @@
 {
   "name": "vrfiles",
   "version": "1.0.0",
-  "description": "",
+  "description": "Navigate your files in VR",
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
@@ -11,6 +11,19 @@
   "author": "Roberto Toro <rto@braincatalogue.org> (https://neuroanatomy.github.io/)",
   "license": "ISC",
   "dependencies": {
-    "live-server": "github:r03ert0/live-server"
+    "live-server": "github:r03ert0/live-server",
+    "three": "^0.126.1",
+    "three-mesh-ui": "^4.4.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r03ert0/vrfiles.git"
+  },
+  "bugs": {
+    "url": "https://github.com/r03ert0/vrfiles/issues"
+  },
+  "homepage": "https://github.com/r03ert0/vrfiles#readme",
+  "devDependencies": {
+    "eslint": "^7.22.0"
   }
 }

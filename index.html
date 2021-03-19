@@ -1,101 +1,18 @@
 <html>
+
+  <!--
+    This version has individual text blocks for each file,
+    and does not use a-frame.
+  -->
+
+  <head>
+    <title>VR Files</title>
+  </head>
+
   <body>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://supereggbert.github.io/aframe-htmlembed-component/dist/build.js"></script>
-    <!-- <script src="aframe.min.js"></script> -->
-    <!-- <script src="build.js"></script> -->
-    <script src="index.js"></script>
-
-    <script>
-      function displayFiles(el, content) {
-        const selection = Math.min(11, content.length);
-        let text;
-        text = `${content[0].file}<br />`;
-        text += content.slice(1, selection).map((o) => { return `[${o.type}] ${o.file}`; }).join("<br />");
-        el.innerHTML = text;
-      }
-      async function liveserversocket() {
-        const delay = 1000;
-        const timeout = 10000;
-        const now = new Date();
-        const ws = await new Promise((resolve, reject) => {
-          const check = () => {
-            if(new Date() - now > timeout) {
-              reject(new Error("timeout"));
-            }
-
-            if(typeof window.LiveServerWebsocket !== "undefined") {
-              resolve(window.LiveServerWebsocket);
-            }
-            setTimeout(check, delay);
-          }
-          check();
-        });
-        return ws;
-      }
-
-      AFRAME.registerComponent('vrfiles', {
-        schema: { type: "string", default: "" },
-        init: async function () {
-          const thisElement = this.el;
-
-          function onmessage(msg) {
-            if(msg.data === "connected") { return; }
-            try {
-              const data = JSON.parse(msg.data);
-              console.log(data.type);
-              switch(data.type) {
-                case "ls":
-                  displayFiles(document.querySelector("#vrfiles"), data.content);
-                  break;
-                case "open":
-                  console.log("open", data.content);
-                  break;
-                default:
-                  console.log("Unknown message type:", data.type);
-              }
-            } catch(err) {
-              console.log("socket message:", msg.data);
-              throw new Error(err);
-            }
-          }
-          
-          let mysocket;
-          try {
-            mysocket = await liveserversocket();
-          } catch(err) {
-            throw new Error(err);
-          }
-          console.log("Got socket", mysocket)
-
-          const originalOnmessageFn = mysocket.onmessage;
-          mysocket.send('ls');
-          mysocket.onmessage = (msg) => {
-            originalOnmessageFn(msg);
-            onmessage(msg);
-          }
-        },
-        update: function () {
-          const el = this.el;
-          const obj3d = el.object3D;
-          const box = new THREE.Box3().setFromObject(obj3d);
-          console.log(box.min, box.max);
-        }
-      });
-
-    </script>
-
-    <a-scene>
-      <a-entity id="cameraRig">
-        <a-camera id="camera"></a-camera>
-        <a-entity id="mouseCursor" cursor="rayOrigin: mouse" raycaster="objects: .screen"></a-entity>
-        <a-entity laser-controls raycaster="objects: .screen;"></a-entity>
-      </a-entity>
-
-      <a-entity vrfiles id="vrfiles" class="screen" htmlembed="ppu:128" position="0 2 -3">
-        <h2>HTML</h2>
-      </a-entity>
-
-    </a-scene>
+    <script src='../node_modules/three-mesh-ui/dist/three-mesh-ui.js'></script>
+    <script type="module" src="VRFiles.js"></script>
+    <script type="module" src="index.js"></script>
   </body>
 </html>
+

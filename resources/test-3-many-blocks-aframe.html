@@ -1,0 +1,285 @@
+<html>
+
+  <!--
+    In this version each files occupies its own container. It works
+    nicely. However, it got too convoluted at the moment of combining
+    it with a-frame's raytracing.
+  -->
+
+  <head>
+    <title>VR Files</title>
+    <script src="aframe-v1.2.0.js"></script>
+    <script src="https://unpkg.com/three-mesh-ui"></script>
+
+    <script>
+      let raycaster = new THREE.Raycaster();
+      let knob, cropContainer, textContainer;
+      let knobSelected = false, knobCaptured = false,
+        knobOriginalPosition;
+      const mouseOriginalPosition = new THREE.Vector3();
+      let plane = new THREE.Plane();
+      let position = new THREE.Vector3();
+      let normal = new THREE.Vector3();
+      let point = new THREE.Vector3();
+      let mouse = new THREE.Vector2(Infinity,Infinity);
+      let fileIndex = 0;
+      const fontSize = 0.1;
+      const interLine = 0.05;
+      const offset = 0.01;
+      const textContainerWidth = 3;
+      const cropContainerWidth = 2.5;
+      const borderRadius = 0;
+      const margin = 0.1;
+      const files = [
+        {name: "13023_2019_Article_1103.pdf"},
+        {name: "2008Toro-Paus;BrainSize;Folding;Evolution;Development.pdf"},
+        {name: "2021_03Atrium"},
+        {name: "3747 PASTEUR.pdf"},
+        {name: "AI&NRN - Maria Esmeralda Castello Gomez.pdf"},
+        {name: "AMI-ReiSo-Contexte.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki-1.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki.pdf"},
+        {name: "CV_KHeuer.pdf"},
+        {name: "Coming 2 America (2021) [720p] [WEBRip] [YTS.MX]"},
+        {name: "Disk Catalogue.vvv"},
+        {name: "EQ17_PORTER.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki-1.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki.pdf"},
+        {name: "CV_KHeuer.pdf"},
+        {name: "Coming 2 America (2021) [720p] [WEBRip] [YTS.MX]"},
+        {name: "Disk Catalogue.vvv"},
+        {name: "EQ17_PORTER.pdf"},
+        {name: "Epilepsy_PMSGuideline_prefinalversion_TLL_TB_IdC_SJ.docx"},
+        {name: "Fengler biorxiv 2020 likelihood approximation networks.pdf"},
+        {name: "EQ17_PORTER.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki-1.pdf"},
+        {name: "CV_2021-03-11_Shaghayegh_Najafipashaki.pdf"},
+        {name: "CV_KHeuer.pdf"},
+        {name: "Coming 2 America (2021) [720p] [WEBRip] [YTS.MX]"},
+        {name: "Disk Catalogue.vvv"},
+        {name: "EQ17_PORTER.pdf"},
+        {name: "Epilepsy_PMSGuideline_prefinalversion_TLL_TB_IdC_SJ.docx"},
+        {name: "Fengler biorxiv 2020 likelihood approximation networks.pdf"},
+        {name: "HumGenClin_Lyon_ORawe_Chapter.pdf"}
+      ];
+      const maxfiles = 15;
+      let firstFile = 15;
+
+      function selectFile(fileIndex) {
+        for(const file of files) {
+          file.container.backgroundColor.set("#9999ff");
+        }
+        files[fileIndex].container.backgroundColor.set("white");
+      }
+
+      function randomColor() {
+        const red = 0.25 + 0.75*Math.random();
+        const green = 0.25 + 0.75*Math.random();
+        const blue = 0.25 + 0.75*Math.random();
+        const color = new THREE.Color(red, green, blue);
+        return color;
+      }
+      function setupUI(parent) {
+        group = parent.el.object3D;
+
+        // main container
+        const container = new ThreeMeshUI.Block({
+          width: cropContainerWidth + 3*margin,
+          height: maxfiles*(fontSize + interLine) + margin,
+          justifyContent: 'start',
+          backgroundColor: new THREE.Color(0x9999ff),
+          backgroundOpacity: 0.5,
+          contentDirection: 'row'
+        });
+        group.add(container);
+
+        // text
+        cropContainer = new ThreeMeshUI.Block({
+          width: cropContainerWidth,
+          height: maxfiles*(fontSize + interLine),
+          margin: margin/2,
+          hiddenOverflow: true,
+          justifyContent: 'start',
+          alignContent: 'left',
+          backgroundSize: 'stretch',
+          // backgroundColor: new THREE.Color(0x8888ff),
+          backgroundOpacity: 0,
+          contentDirection: 'column',
+          offset
+        });
+        container.add(cropContainer);
+
+        textContainer = new ThreeMeshUI.Block({
+          width: textContainerWidth,
+          height: files.length*(fontSize + interLine),
+          // backgroundColor: new THREE.Color(0xff8888),
+          backgroundOpacity: 0,
+          offset,
+          justifyContent: 'center', alignContent: 'left'
+        });
+        cropContainer.add(textContainer);
+
+        for(const file of files) {
+          const fileContainer = new ThreeMeshUI.Block({
+            width: textContainerWidth,
+            height: fontSize + interLine,
+            backgroundColor: new THREE.Color(0x9999ff),
+            backgroundOpacity: 0.2,
+            interLine: 0,
+            offset,
+            justifyContent: 'center', alignContent: 'left'
+          });
+          textContainer.add(fileContainer);
+          file.container = fileContainer;
+
+          const textPanel = new ThreeMeshUI.Text({
+            content: file.name,
+            fontSize,
+            fontFamily: 'assets/Roboto-msdf.json',
+            fontTexture: 'assets/Roboto-msdf.png'
+          });
+          fileContainer.add(textPanel);
+        }
+
+        // scroller rail
+        const railWidth = 0.2 - margin;
+        const railHeight = maxfiles*(fontSize + interLine);
+        const scrollerContainer = new ThreeMeshUI.Block({
+          width: railWidth,
+          height: railHeight,
+          margin: margin/2,
+          backgroundColor: new THREE.Color('black'),
+          backgroundOpacity: 0.2
+        });
+        container.add(scrollerContainer);
+
+        // scroller knob
+        const knobHeight = (maxfiles/files.length)*maxfiles*(fontSize + interLine);
+        const knobGeometry = new THREE.PlaneGeometry(railWidth, knobHeight);
+        const knobMaterial = new THREE.MeshBasicMaterial({color:"white"});
+        knob = new THREE.Mesh(knobGeometry, knobMaterial);
+        knob.position.y = (railHeight - knobHeight)/2 - (firstFile/files.length)*railHeight;
+        knob.position.z = 0.01;
+        knobGeometry.computeFaceNormals();
+        scrollerContainer.add(knob);
+      }
+
+      function planeNormal(plane) {
+        // compute normals needs to be called upon creation of the plane
+        const arr = plane.geometry.attributes.normal.array;
+        normal.set(arr[0], arr[1], arr[2]);
+        return normal;
+      }
+
+      function raycastOnKnobPlane(mouse) {
+        const camera = document.querySelector("a-scene").camera;
+        normal = planeNormal(knob);
+        knob.getWorldPosition(position);
+        plane.setFromNormalAndCoplanarPoint(normal, position);
+        raycaster.setFromCamera( mouse, camera );
+        raycaster.ray.intersectPlane(plane, point);
+        return point;
+      }
+
+      AFRAME.registerComponent('configure', {
+        init: function () {
+          const scene = document.querySelector('a-scene').object3D
+          scene.background = new THREE.Color( 0x505050 );
+        }
+      });
+
+      AFRAME.registerComponent('vr', {
+        init: function () {
+          setupUI(this);
+
+          // setup events
+          function moveknob( mouse ) {
+            point = raycastOnKnobPlane(mouse);
+            const y = knobOriginalPosition.y + point.y - mouseOriginalPosition.y;
+
+            const railHeight = maxfiles*(fontSize + interLine);
+            const knobHeight = (maxfiles/files.length)*maxfiles*(fontSize + interLine);
+            firstFile = Math.floor(((railHeight - knobHeight)/2 - y)*files.length/railHeight);
+
+            if(firstFile<0) {
+              firstFile = 0;
+            }
+
+            if(firstFile > files.length - maxfiles) {
+              firstFile = files.length - maxfiles;
+            }
+
+            knob.position.y = (railHeight - knobHeight)/2 - (firstFile/files.length)*railHeight;
+          }
+          function onmousemove(e) {
+            mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+            if(knobCaptured) { moveknob(mouse); }
+          }
+          function onkeydown(event) {
+            if(event.code === "Enter") {
+              console.log(files[firstFile + fileIndex].name);
+              return;
+            }
+
+            if(knobSelected && knobCaptured === false) {
+              knobCaptured = true;
+              mouseOriginalPosition.copy(raycastOnKnobPlane(mouse));
+              knobOriginalPosition = {x:knob.position.x, y:knob.position.y, z:knob.position.z};
+            }
+          }
+          function onkeyup() { knobCaptured = false; }
+          window.addEventListener( 'mousemove', onmousemove, false );
+          window.addEventListener( 'keydown', onkeydown, false );
+          window.addEventListener( 'keyup', onkeyup, false );
+        },
+        tick: function () {
+          ThreeMeshUI.update();
+
+          // offset to first file
+          const textContainerOffset = -(textContainer.getHeight() - cropContainer.getHeight())/2;
+          textContainer.position.y = textContainerOffset + firstFile*(fontSize + interLine);
+
+          if(typeof raycaster === "undefined") {
+            return;
+          }
+          const scene = this.el.sceneEl.object3D;
+          const camera = this.el.sceneEl.camera;
+          raycaster.setFromCamera( mouse, camera );
+          
+          // check text hover
+          const cropContainerFrame = cropContainer.getObjectByName("MeshUI-Frame");
+          if(cropContainerFrame) {
+            const intersect = raycaster.intersectObject( cropContainerFrame );
+            if(intersect.length) {
+              fileIndex = parseInt(maxfiles * (1 - intersect[0].uv.y));
+              selectFile(firstFile + fileIndex);
+            }
+          }
+
+          // check knob hover
+          if(knob) {
+            const intersect = raycaster.intersectObject( knob );
+            if(intersect.length) {
+              knobSelected = true;
+              knob.material.color.set( 0xff0000 );
+            } else {
+              knobSelected = false;
+              knob.material.color.set( 0xffffff );
+            }
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <a-scene configure>
+
+      <a-entity vr position="0 2 -3">
+      </a-entity>
+
+    </a-scene>
+  </body>
+</html>
+

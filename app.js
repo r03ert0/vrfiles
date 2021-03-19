@@ -23,12 +23,12 @@ const params = {
       console.log("new websocket client added in app.js");
     })(client, getUId());
   },
+	https: "./https.conf.js"
 };
 
 /*
 	ignorePattern: '.*.ply',
 	middleware: [saveply],
-	https: "./https.conf.js"
 */
 
 liveServer.start(params);
@@ -70,7 +70,7 @@ function open(uid, filepath) {
       return err;
     }
   } else {
-    console.log(`${filepath} is a file`);
+    console.log(`requested "${filepath}"`);
     const stat = fs.lstatSync(fullpath);
     return stat;
   }
@@ -81,7 +81,9 @@ function open(uid, filepath) {
  */
 function wsmessage(uid, event) {
   const msg = event.data;
-  const [key, val] = msg.split(" ");
+  const parts = msg.split(" ");
+  const key = parts[0];
+  const val = parts.slice(1).join(" ");
 
   console.log("received message:", key);
 

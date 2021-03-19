@@ -1,6 +1,5 @@
 .DS_Store
 ._.DS_Store
 node_modules
-aframe.min.js
-build.js
-window.html
+key.pem
+cert.pem
